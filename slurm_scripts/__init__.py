@@ -12,7 +12,7 @@ def generate_slurm_script(
     partition: str = "project",
     output_file: str = None,
     error_file: str = None,
-):
+) -> str:
     """
     Generate a slurm script for the given bash script.
     """
@@ -30,10 +30,20 @@ def generate_slurm_script(
         f.write(f"set -euo pipefail\n")
         f.write(f"\n")
         f.write(f"{bash_script}\n")
+    return slurm_script
 
+def run_slurm_script(slurm_script: str):
+    """
+    Run a slurm script using sbatch.
+    """
+    import subprocess
 
+    result = subprocess.run(["sbatch", slurm_script], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"Failed to submit slurm script: {result.stderr}")
+    print(f"Submitted slurm script: {result.stdout.strip()}")
 
-def generate_slurm_script_cli():
+def run_slurm_script_cli():
     """
     Command line interface to generate a slurm script.
     """
@@ -77,7 +87,7 @@ def generate_slurm_script_cli():
 
 
 
-    generate_slurm_script(
+    slurm_script_filename = generate_slurm_script(
         bash_script=args.bash_script,
         job_name=args.job_name,
         time=args.time,
@@ -85,3 +95,5 @@ def generate_slurm_script_cli():
         output_file=args.output_file,
         error_file=args.error_file,
     )
+    
+    run_slurm_script(slurm_script_filename)
