@@ -1,0 +1,13 @@
+[build-system]
+requires = ["flit_core >=3.11,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "slurm_scripts"
+authors = []
+license = "MIT"
+license-files = ["LICENSE"]
+dynamic = ["version", "description"]
+
+[project.scripts]
+sh2slurm = "slurm_scripts:generate_slurm_script_cli"
