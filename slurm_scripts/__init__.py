@@ -69,7 +69,41 @@ def run_slurm_script(slurm_script: str):
         raise RuntimeError(f"Failed to submit slurm script: {result.stderr}")
     print(f"Submitted slurm script: {result.stdout.strip()}")
 
-def run_slurm_script_cli():
+
+def generate_slurm_array_script(
+    bash_script: str,
+    array_argument_file: str,
+    concurrent_jobs: int,
+    job_name: str = None,
+    time: str = "01:00:00",
+    partition: str = "project",
+) -> str:
+    """
+    Generate a slurm array script for the given bash script and array arguments.
+    """
+    import os
+
+    slurm_script = f"{os.path.splitext(bash_script)[0]}_array.slurm"
+    array_arguments = [l.strip() for l in open(array_argument_file, "r")]
+
+    with open(slurm_script, "w") as f:
+        f.write(f"#!/bin/bash\n")
+        f.write(f"#SBATCH --job-name={job_name or os.path.splitext(bash_script)[0]}\n")
+        f.write(f"#SBATCH --output={os.path.splitext(bash_script)[0]}_%A_%a.out\n")
+        f.write(f"#SBATCH --error={os.path.splitext(bash_script)[0]}_%A_%a.err\n")
+        f.write(f"#SBATCH --time={time}\n")
+        f.write(f"#SBATCH --partition={partition}\n")
+        f.write(f"#SBATCH --array=1-{len(array_arguments)}%{concurrent_jobs}\n")
+        f.write(f"\n")
+        f.write(f"set -euo pipefail\n")
+        f.write(f"\n")
+        f.write(f"ARGUMENT=$(sed -n \"${{SLURM_ARRAY_TASK_ID}}p\" {array_argument_file})\n")
+        f.write(f"srun {bash_script} $ARGUMENT\n")
+    return slurm_script
+
+
+
+def cli_run_slurm_script():
     """
     Command line interface to generate a slurm script.
     """
@@ -89,8 +123,8 @@ def run_slurm_script_cli():
     parser.add_argument(
         "--time",
         type=str,
-        default="01:00:00",
-        help="The time limit for the job (default: 01:00:00).",
+        default="08:00:00",
+        help="The time limit for the job (default: 08:00:00).",
     )
     parser.add_argument(
         "--partition",
@@ -123,3 +157,62 @@ def run_slurm_script_cli():
     )
     
     run_slurm_script(slurm_script_filename)
+
+
+
+def cli_run_slurm_array():
+    """
+    Command line interface to generate a slurm array script.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate a slurm array script.")
+    parser.add_argument(
+        "bash_script",
+        type=script_file,
+        help="The name of the bash script to generate a slurm array script for.",
+    )
+    parser.add_argument(
+        "array_argument_file",
+        type=str,
+        help="The file containing the arguments for the array jobs, one line for each job in the array.",
+    )
+    parser.add_argument(
+        "concurrent_jobs",
+        type=int,
+        help="The number of concurrent jobs to run in the array.",
+    )
+
+    parser.add_argument(
+        "--job-name",
+        type=str,
+        help="The name of the job.",
+    )
+    parser.add_argument(
+        "--time",
+        type=str,
+        default="08:00:00",
+        help="The time limit for the job (default: 08:00:00).",
+    )
+    parser.add_argument(
+        "--partition",
+        type=str,
+        default="project",
+        help="The partition to submit the job to (default: project).",
+    )
+
+    args = parser.parse_args()
+
+    with open(args.array_argument_file, "r") as f:
+        array_arguments = [line.strip() for line in f if line.strip()]
+
+    slurm_script_filename = generate_slurm_array_script(
+        bash_script=args.bash_script,
+        array_arguments=array_arguments,
+        concurrent_jobs=args.concurrent_jobs,
+        job_name=args.job_name,
+        time=args.time,
+        partition=args.partition,
+    )
+
+    # run_slurm_script(slurm_script_filename)
