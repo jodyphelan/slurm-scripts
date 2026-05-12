@@ -9,13 +9,27 @@ def script_file(filename: str) -> bool:
     Check if a file exists.
     """
     import os
-    if not os.path.exists(filename):
-        raise FileNotFoundError(f"File {filename} does not exist.")
     
+    checks_pass = True
+    if not os.path.exists(filename):
+        # print red circle emoji and error message
+        print(f"🔴 File {filename} does not exist")
+        checks_pass = False
+    else:
+        print(f"🟢 File {filename} exists")
+
     # if the file is not executable, raise an error    if not os.access(filename, os.X_OK):
     if not os.access(filename, os.X_OK):
-        raise PermissionError(f"File {filename} is not executable.")
-    return filename
+        print(f"🔴 File {filename} is not executable")
+        checks_pass = False
+    else:
+        print(f"🟢 File {filename} is executable")
+
+    if checks_pass:
+        return filename
+    else:
+        print(f"One or more checks failed for file {filename}. Please fix the issues and try again.")
+        quit(1)
 
 def generate_slurm_script(
     bash_script: str,
