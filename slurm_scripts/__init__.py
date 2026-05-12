@@ -203,12 +203,9 @@ def cli_run_slurm_array():
 
     args = parser.parse_args()
 
-    with open(args.array_argument_file, "r") as f:
-        array_arguments = [line.strip() for line in f if line.strip()]
-
     slurm_script_filename = generate_slurm_array_script(
         bash_script=args.bash_script,
-        array_arguments=array_arguments,
+        array_argument_file=args.array_argument_file,
         concurrent_jobs=args.concurrent_jobs,
         job_name=args.job_name,
         time=args.time,
