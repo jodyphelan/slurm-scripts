@@ -11,4 +11,4 @@ dynamic = ["version", "description"]
 
 [project.scripts]
 sh2sjob = "slurm_scripts:cli_run_slurm_script"
-sh2sarray = slurm_scripts:cli_run_slurm_array"
+sh2sarray = "slurm_scripts:cli_run_slurm_array"
