@@ -10,7 +10,7 @@ def existing_file(filename: str) -> bool:
     """
     import os
 
-    if os.path.isfile(filename)
+    if os.path.isfile(filename):
         return filename
     else:
         raise FileNotFoundError(f"File {filename} does not exist.")
