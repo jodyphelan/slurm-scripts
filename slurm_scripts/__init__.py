@@ -29,7 +29,7 @@ def generate_slurm_script(
         f.write(f"\n")
         f.write(f"set -euo pipefail\n")
         f.write(f"\n")
-        f.write(f"{bash_script}\n")
+        f.write(f"srun {bash_script}\n")
     return slurm_script
 
 def run_slurm_script(slurm_script: str):
