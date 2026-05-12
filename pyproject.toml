@@ -10,4 +10,4 @@ license-files = ["LICENSE"]
 dynamic = ["version", "description"]
 
 [project.scripts]
-sh2slurm = "slurm_scripts:generate_slurm_script_cli"
+sh2slurm = "slurm_scripts:run_slurm_script_cli"
