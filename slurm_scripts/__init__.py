@@ -4,6 +4,16 @@ Code to generate and monitor slurm scripts.
 
 __version__ = "0.1.0"
 
+def existing_file(filename: str) -> bool:
+    """
+    Check if a file exists.
+    """
+    import os
+
+    if os.path.isfile(filename)
+        return filename
+    else:
+        raise FileNotFoundError(f"File {filename} does not exist.")
 
 def generate_slurm_script(
     bash_script: str,
@@ -52,7 +62,7 @@ def run_slurm_script_cli():
     parser = argparse.ArgumentParser(description="Generate a slurm script.")
     parser.add_argument(
         "bash_script",
-        type=str,
+        type=existing_file,
         help="The name of the bash script to generate a slurm script for.",
     )
     parser.add_argument(
