@@ -212,4 +212,4 @@ def cli_run_slurm_array():
         partition=args.partition,
     )
 
-    # run_slurm_script(slurm_script_filename)
+    run_slurm_script(slurm_script_filename)
