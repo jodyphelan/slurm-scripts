@@ -18,6 +18,14 @@ def script_file(filename: str) -> bool:
     else:
         print(f"🟢 File {filename} exists")
 
+    with open(filename, "r", encoding="utf-8") as f:
+        first_line = f.readline().strip()
+    if first_line not in ("#!/bin/bash", "#! /bin/bash"):
+        print(f"🔴 File {filename} does not start with '#!/bin/bash' or '#! /bin/bash'")
+        checks_pass = False
+    else:
+        print(f"🟢 File {filename} has a valid bash shebang")
+
     # if the file is not executable, raise an error    if not os.access(filename, os.X_OK):
     if not os.access(filename, os.X_OK):
         print(f"🔴 File {filename} is not executable")
