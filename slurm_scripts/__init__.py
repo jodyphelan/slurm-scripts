@@ -4,6 +4,16 @@ Code to generate and monitor slurm scripts.
 
 __version__ = "0.1.0"
 
+
+import json
+
+
+def generate_teams_message_card(content: str):
+    teams_message_card_template = json.load(open("card-template.json"))
+    teams_message_card_template['body'][0]['items'][0]['text'] = content
+    return teams_message_card_template
+
+
 def script_file(filename: str) -> bool:
     """
     Check if a file exists.
@@ -46,6 +56,7 @@ def generate_slurm_script(
     partition: str = "project",
     output_file: str = None,
     error_file: str = None,
+    cpus_per_task: int = None,
 ) -> str:
     """
     Generate a slurm script for the given bash script.
@@ -60,6 +71,8 @@ def generate_slurm_script(
         f.write(f"#SBATCH --error={error_file or f'{os.path.splitext(bash_script)[0]}.err'}\n")
         f.write(f"#SBATCH --time={time}\n")
         f.write(f"#SBATCH --partition={partition}\n")
+        if cpus_per_task is not None:
+            f.write(f"#SBATCH --cpus-per-task={cpus_per_task}\n")
         f.write(f"\n")
         f.write(f"set -euo pipefail\n")
         f.write(f"\n")
@@ -85,6 +98,7 @@ def generate_slurm_array_script(
     job_name: str = None,
     time: str = "01:00:00",
     partition: str = "project",
+    cpus_per_task: int = None,
 ) -> str:
     """
     Generate a slurm array script for the given bash script and array arguments.
@@ -101,6 +115,8 @@ def generate_slurm_array_script(
         f.write(f"#SBATCH --error={os.path.splitext(bash_script)[0]}_%A_%a.err\n")
         f.write(f"#SBATCH --time={time}\n")
         f.write(f"#SBATCH --partition={partition}\n")
+        if cpus_per_task is not None:
+            f.write(f"#SBATCH --cpus-per-task={cpus_per_task}\n")
         f.write(f"#SBATCH --array=1-{len(array_arguments)}%{concurrent_jobs}\n")
         f.write(f"\n")
         f.write(f"set -euo pipefail\n")
@@ -150,6 +166,11 @@ def cli_run_slurm_script():
         type=str,
         help="The file to write the stderr output to.",
     )
+    parser.add_argument(
+        "--cpus-per-task",
+        type=int,
+        help="Maximum number of CPU cores per task.",
+    )
 
     args = parser.parse_args()
 
@@ -162,6 +183,7 @@ def cli_run_slurm_script():
         partition=args.partition,
         output_file=args.output_file,
         error_file=args.error_file,
+        cpus_per_task=args.cpus_per_task,
     )
     
     run_slurm_script(slurm_script_filename)
@@ -208,6 +230,11 @@ def cli_run_slurm_array():
         default="project",
         help="The partition to submit the job to (default: project).",
     )
+    parser.add_argument(
+        "--cpus-per-task",
+        type=int,
+        help="Maximum number of CPU cores per task.",
+    )
 
     args = parser.parse_args()
 
@@ -218,6 +245,7 @@ def cli_run_slurm_array():
         job_name=args.job_name,
         time=args.time,
         partition=args.partition,
+        cpus_per_task=args.cpus_per_task,
     )
 
     run_slurm_script(slurm_script_filename)

@@ -54,6 +54,7 @@ Optional arguments:
 - `--job-name <name>`
 - `--time <HH:MM:SS>` (default in CLI: `08:00:00`)
 - `--partition <name>` (default: `project`)
+- `--cpus-per-task <int>` (max CPU cores per task)
 - `--output-file <path>`
 - `--error-file <path>`
 
@@ -63,6 +64,7 @@ Example:
 sh2sjob my_script.sh \
 	--job-name preprocess \
 	--time 02:00:00 \
+	--cpus-per-task 8 \
 	--partition short \
 	--output-file logs/preprocess.out \
 	--error-file logs/preprocess.err
@@ -95,6 +97,7 @@ Optional arguments:
 - `--job-name <name>`
 - `--time <HH:MM:SS>` (default in CLI: `08:00:00`)
 - `--partition <name>` (default: `project`)
+- `--cpus-per-task <int>` (max CPU cores per task)
 
 Example:
 
@@ -102,6 +105,7 @@ Example:
 sh2sarray my_script.sh args.txt 20 \
 	--job-name batch_eval \
 	--time 04:00:00 \
+	--cpus-per-task 4 \
 	--partition compute
 ```
 
