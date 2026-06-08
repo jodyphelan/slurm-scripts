@@ -14,6 +14,25 @@ def generate_teams_message_card(content: str):
     return teams_message_card_template
 
 
+def command_to_bash_script(command: str, bash_script: str = "cmd2sjob.sh") -> str:
+    """
+    Create an executable bash script that runs the given command.
+    """
+    import os
+    import stat
+
+    with open(bash_script, "w", encoding="utf-8") as f:
+        f.write("#! /bin/bash\n")
+        f.write(f"{command}\n")
+
+    current_mode = os.stat(bash_script).st_mode
+    os.chmod(
+        bash_script,
+        current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH,
+    )
+    return bash_script
+
+
 def script_file(filename: str) -> bool:
     """
     Check if a file exists.
@@ -248,4 +267,76 @@ def cli_run_slurm_array():
         cpus_per_task=args.cpus_per_task,
     )
 
+    run_slurm_script(slurm_script_filename)
+
+
+def cli_run_command_to_slurm_job():
+    """
+    Command line interface to run a shell command as a slurm job.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Create a bash script from a command and submit it as a slurm job."
+    )
+    parser.add_argument(
+        "command",
+        type=str,
+        help="The shell command to run.",
+    )
+    parser.add_argument(
+        "--bash-script",
+        type=str,
+        default="cmd2sjob.sh",
+        help="Name of the generated bash script (default: cmd2sjob.sh).",
+    )
+    parser.add_argument(
+        "--job-name",
+        type=str,
+        help="The name of the job.",
+    )
+    parser.add_argument(
+        "--time",
+        type=str,
+        default="08:00:00",
+        help="The time limit for the job (default: 08:00:00).",
+    )
+    parser.add_argument(
+        "--partition",
+        type=str,
+        default="project",
+        help="The partition to submit the job to (default: project).",
+    )
+    parser.add_argument(
+        "--output-file",
+        type=str,
+        help="The file to write the stdout output to.",
+    )
+    parser.add_argument(
+        "--error-file",
+        type=str,
+        help="The file to write the stderr output to.",
+    )
+    parser.add_argument(
+        "--cpus-per-task",
+        type=int,
+        help="Maximum number of CPU cores per task.",
+    )
+
+    args = parser.parse_args()
+
+    bash_script = command_to_bash_script(
+        command=args.command,
+        bash_script=args.bash_script,
+    )
+
+    slurm_script_filename = generate_slurm_script(
+        bash_script=bash_script,
+        job_name=args.job_name,
+        time=args.time,
+        partition=args.partition,
+        output_file=args.output_file,
+        error_file=args.error_file,
+        cpus_per_task=args.cpus_per_task,
+    )
     run_slurm_script(slurm_script_filename)
