@@ -76,6 +76,7 @@ def generate_slurm_script(
     output_file: str = None,
     error_file: str = None,
     cpus_per_task: int = None,
+    logs_dir: str = "logs",
 ) -> str:
     """
     Generate a slurm script for the given bash script.
@@ -83,11 +84,14 @@ def generate_slurm_script(
     import os
 
     slurm_script = f"{os.path.splitext(bash_script)[0]}.slurm"
+    os.makedirs(logs_dir, exist_ok=True)
+    base_name = os.path.splitext(bash_script)[0]
+
     with open(slurm_script, "w") as f:
         f.write(f"#!/bin/bash\n")
-        f.write(f"#SBATCH --job-name={job_name or os.path.splitext(bash_script)[0]}\n")
-        f.write(f"#SBATCH --output={output_file or f'{os.path.splitext(bash_script)[0]}.out'}\n")
-        f.write(f"#SBATCH --error={error_file or f'{os.path.splitext(bash_script)[0]}.err'}\n")
+        f.write(f"#SBATCH --job-name={job_name or base_name}\n")
+        f.write(f"#SBATCH --output={output_file or os.path.join(logs_dir, f'{base_name}.out')}\n")
+        f.write(f"#SBATCH --error={error_file or os.path.join(logs_dir, f'{base_name}.err')}\n")
         f.write(f"#SBATCH --time={time}\n")
         f.write(f"#SBATCH --partition={partition}\n")
         if cpus_per_task is not None:
@@ -118,6 +122,7 @@ def generate_slurm_array_script(
     time: str = "01:00:00",
     partition: str = "project",
     cpus_per_task: int = None,
+    logs_dir: str = "logs",
 ) -> str:
     """
     Generate a slurm array script for the given bash script and array arguments.
@@ -126,12 +131,14 @@ def generate_slurm_array_script(
 
     slurm_script = f"{os.path.splitext(bash_script)[0]}_array.slurm"
     array_arguments = [l.strip() for l in open(array_argument_file, "r")]
+    os.makedirs(logs_dir, exist_ok=True)
+    base_name = os.path.splitext(bash_script)[0]
 
     with open(slurm_script, "w") as f:
         f.write(f"#!/bin/bash\n")
-        f.write(f"#SBATCH --job-name={job_name or os.path.splitext(bash_script)[0]}\n")
-        f.write(f"#SBATCH --output={os.path.splitext(bash_script)[0]}_%A_%a.out\n")
-        f.write(f"#SBATCH --error={os.path.splitext(bash_script)[0]}_%A_%a.err\n")
+        f.write(f"#SBATCH --job-name={job_name or base_name}\n")
+        f.write(f"#SBATCH --output={os.path.join(logs_dir, f'{job_name or base_name}_%A_%a.out')}\n")
+        f.write(f"#SBATCH --error={os.path.join(logs_dir, f'{job_name or base_name}_%A_%a.err')}\n")
         f.write(f"#SBATCH --time={time}\n")
         f.write(f"#SBATCH --partition={partition}\n")
         if cpus_per_task is not None:
@@ -190,6 +197,12 @@ def cli_run_slurm_script():
         type=int,
         help="Maximum number of CPU cores per task.",
     )
+    parser.add_argument(
+        "--logs-dir",
+        type=str,
+        default="logs",
+        help="Directory to write stdout/stderr logs (default: logs).",
+    )
 
     args = parser.parse_args()
 
@@ -203,6 +216,7 @@ def cli_run_slurm_script():
         output_file=args.output_file,
         error_file=args.error_file,
         cpus_per_task=args.cpus_per_task,
+        logs_dir=args.logs_dir,
     )
     
     run_slurm_script(slurm_script_filename)
@@ -254,6 +268,12 @@ def cli_run_slurm_array():
         type=int,
         help="Maximum number of CPU cores per task.",
     )
+    parser.add_argument(
+        "--logs-dir",
+        type=str,
+        default="logs",
+        help="Directory to write stdout/stderr logs (default: logs).",
+    )
 
     args = parser.parse_args()
 
@@ -265,6 +285,7 @@ def cli_run_slurm_array():
         time=args.time,
         partition=args.partition,
         cpus_per_task=args.cpus_per_task,
+        logs_dir=args.logs_dir,
     )
 
     run_slurm_script(slurm_script_filename)
@@ -322,6 +343,12 @@ def cli_run_command_to_slurm_job():
         type=int,
         help="Maximum number of CPU cores per task.",
     )
+    parser.add_argument(
+        "--logs-dir",
+        type=str,
+        default="logs",
+        help="Directory to write stdout/stderr logs (default: logs).",
+    )
 
     args = parser.parse_args()
 
@@ -338,5 +365,6 @@ def cli_run_command_to_slurm_job():
         output_file=args.output_file,
         error_file=args.error_file,
         cpus_per_task=args.cpus_per_task,
+        logs_dir=args.logs_dir,
     )
     run_slurm_script(slurm_script_filename)
