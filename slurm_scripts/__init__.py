@@ -76,6 +76,7 @@ def generate_slurm_script(
     output_file: str = None,
     error_file: str = None,
     cpus_per_task: int = None,
+    max_ram: str = None,
     logs_dir: str = "logs",
 ) -> str:
     """
@@ -96,6 +97,8 @@ def generate_slurm_script(
         f.write(f"#SBATCH --partition={partition}\n")
         if cpus_per_task is not None:
             f.write(f"#SBATCH --cpus-per-task={cpus_per_task}\n")
+        if max_ram is not None:
+            f.write(f"#SBATCH --mem={max_ram}\n")
         f.write(f"\n")
         f.write(f"set -euo pipefail\n")
         f.write(f"\n")
@@ -122,6 +125,7 @@ def generate_slurm_array_script(
     time: str = "01:00:00",
     partition: str = "project",
     cpus_per_task: int = None,
+    max_ram: str = None,
     logs_dir: str = "logs",
 ) -> str:
     """
@@ -143,6 +147,8 @@ def generate_slurm_array_script(
         f.write(f"#SBATCH --partition={partition}\n")
         if cpus_per_task is not None:
             f.write(f"#SBATCH --cpus-per-task={cpus_per_task}\n")
+        if max_ram is not None:
+            f.write(f"#SBATCH --mem={max_ram}\n")
         f.write(f"#SBATCH --array=1-{len(array_arguments)}%{concurrent_jobs}\n")
         f.write(f"\n")
         f.write(f"set -euo pipefail\n")
@@ -198,6 +204,11 @@ def cli_run_slurm_script():
         help="Maximum number of CPU cores per task.",
     )
     parser.add_argument(
+        "--max-ram",
+        type=str,
+        help="Maximum RAM for the job, for example 16G or 8000M.",
+    )
+    parser.add_argument(
         "--logs-dir",
         type=str,
         default="logs",
@@ -216,6 +227,7 @@ def cli_run_slurm_script():
         output_file=args.output_file,
         error_file=args.error_file,
         cpus_per_task=args.cpus_per_task,
+        max_ram=args.max_ram,
         logs_dir=args.logs_dir,
     )
     
@@ -269,6 +281,11 @@ def cli_run_slurm_array():
         help="Maximum number of CPU cores per task.",
     )
     parser.add_argument(
+        "--max-ram",
+        type=str,
+        help="Maximum RAM for the job, for example 16G or 8000M.",
+    )
+    parser.add_argument(
         "--logs-dir",
         type=str,
         default="logs",
@@ -285,6 +302,7 @@ def cli_run_slurm_array():
         time=args.time,
         partition=args.partition,
         cpus_per_task=args.cpus_per_task,
+        max_ram=args.max_ram,
         logs_dir=args.logs_dir,
     )
 
@@ -344,6 +362,11 @@ def cli_run_command_to_slurm_job():
         help="Maximum number of CPU cores per task.",
     )
     parser.add_argument(
+        "--max-ram",
+        type=str,
+        help="Maximum RAM for the job, for example 16G or 8000M.",
+    )
+    parser.add_argument(
         "--logs-dir",
         type=str,
         default="logs",
@@ -365,6 +388,7 @@ def cli_run_command_to_slurm_job():
         output_file=args.output_file,
         error_file=args.error_file,
         cpus_per_task=args.cpus_per_task,
+        max_ram=args.max_ram,
         logs_dir=args.logs_dir,
     )
     run_slurm_script(slurm_script_filename)
