@@ -13,15 +13,11 @@ def generate_teams_message_card(content: str):
     teams_message_card_template['body'][0]['items'][0]['text'] = content
     return teams_message_card_template
 
-def get_slack_webhook() -> str:
+def get_slack_pings_file() -> str:
     import os
-    slurm_scripts_config = os.path.expanduser("~/.slurm_scripts_config")
-    if os.path.exists(slurm_scripts_config):
-        with open(slurm_scripts_config, "r", encoding="utf-8") as f:
-            config = json.load(f)
-        slack_webhook = config.get("SLACK_WEBHOOK")
-        if slack_webhook:
-            return slack_webhook
+    slack_pings_file = os.path.expanduser("~/.slack-pings")
+    if os.path.exists(slack_pings_file):
+        return slack_pings_file
     return None
 
 def command_to_bash_script(command: str, bash_script: str = "cmd2sjob.sh") -> str:
@@ -34,9 +30,10 @@ def command_to_bash_script(command: str, bash_script: str = "cmd2sjob.sh") -> st
     with open(bash_script, "w", encoding="utf-8") as f:
         f.write("#! /bin/bash\n")
         f.write(f"{command}\n")
-        slack_webhook = get_slack_webhook()
-        if slack_webhook is not None:
-            f.write(f"curl -X POST -H 'Content-type: application/json' --data '{{\"text\":\"Command `{command}` finished successfully.\"}}' {slack_webhook}\n")
+        slack_pings_file = get_slack_pings_file()
+        if slack_pings_file is not None:
+            with open(slack_pings_file, "a", encoding="utf-8") as f_pings:
+                f_pings.write(f"{bash_script}\n")
 
     current_mode = os.stat(bash_script).st_mode
     os.chmod(
