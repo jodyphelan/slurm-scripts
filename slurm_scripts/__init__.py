@@ -32,8 +32,7 @@ def command_to_bash_script(command: str, bash_script: str = "cmd2sjob.sh") -> st
         f.write(f"{command}\n")
         slack_pings_file = get_slack_pings_file()
         if slack_pings_file is not None:
-            with open(slack_pings_file, "a", encoding="utf-8") as f_pings:
-                f_pings.write(f"Finnished running `{command}`\n")
+            f.write(f"ping-slack {command}")
 
     current_mode = os.stat(bash_script).st_mode
     os.chmod(
