@@ -13,6 +13,16 @@ def generate_teams_message_card(content: str):
     teams_message_card_template['body'][0]['items'][0]['text'] = content
     return teams_message_card_template
 
+def get_slack_webhook() -> str:
+    import os
+    slurm_scripts_config = os.path.expanduser("~/.slurm_scripts_config")
+    if os.path.exists(slurm_scripts_config):
+        with open(slurm_scripts_config, "r", encoding="utf-8") as f:
+            config = json.load(f)
+        slack_webhook = config.get("SLACK_WEBHOOK")
+        if slack_webhook:
+            return slack_webhook
+    return None
 
 def command_to_bash_script(command: str, bash_script: str = "cmd2sjob.sh") -> str:
     """
@@ -24,6 +34,9 @@ def command_to_bash_script(command: str, bash_script: str = "cmd2sjob.sh") -> st
     with open(bash_script, "w", encoding="utf-8") as f:
         f.write("#! /bin/bash\n")
         f.write(f"{command}\n")
+        slack_webhook = get_slack_webhook()
+        if slack_webhook is not None:
+            f.write(f"curl -X POST -H 'Content-type: application/json' --data '{{\"text\":\"Command `{command}` finished successfully.\"}}' {slack_webhook}\n")
 
     current_mode = os.stat(bash_script).st_mode
     os.chmod(
