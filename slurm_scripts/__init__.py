@@ -6,7 +6,10 @@ __version__ = "0.1.0"
 
 
 import json
+import logging
 from uuid import uuid4
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 
 def generate_teams_message_card(content: str):
@@ -58,30 +61,30 @@ def script_file(filename: str) -> bool:
     checks_pass = True
     if not os.path.exists(filename):
         # print red circle emoji and error message
-        print(f"🔴 File {filename} does not exist")
+        logging.error(f"🔴 File {filename} does not exist")
         checks_pass = False
     else:
-        print(f"🟢 File {filename} exists")
+        logging.info(f"🟢 File {filename} exists")
 
     with open(filename, "r", encoding="utf-8") as f:
         first_line = f.readline().strip()
     if first_line not in ("#!/bin/bash", "#! /bin/bash"):
-        print(f"🔴 File {filename} does not start with '#!/bin/bash' or '#! /bin/bash'")
+        logging.error(f"🔴 File {filename} does not start with '#!/bin/bash' or '#! /bin/bash'")
         checks_pass = False
     else:
-        print(f"🟢 File {filename} has a valid bash shebang")
+        logging.info(f"🟢 File {filename} has a valid bash shebang")
 
     # if the file is not executable, raise an error    if not os.access(filename, os.X_OK):
     if not os.access(filename, os.X_OK):
-        print(f"🔴 File {filename} is not executable")
+        logging.error(f"🔴 File {filename} is not executable")
         checks_pass = False
     else:
-        print(f"🟢 File {filename} is executable")
+        logging.info(f"🟢 File {filename} is executable")
 
     if checks_pass:
         return filename
     else:
-        print(f"One or more checks failed for file {filename}. Please fix the issues and try again.")
+        logging.error(f"One or more checks failed for file {filename}. Please fix the issues and try again.")
         quit(1)
 
 def generate_slurm_script(
@@ -130,7 +133,7 @@ def run_slurm_script(slurm_script: str):
     result = subprocess.run(["sbatch", slurm_script], capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(f"Failed to submit slurm script: {result.stderr}")
-    print(f"Submitted slurm script: {result.stdout.strip()}")
+    logging.info(f"Submitted slurm script: {result.stdout.strip()}")
 
 
 def generate_slurm_array_script(
@@ -398,6 +401,7 @@ def cli_run_command_to_slurm_job():
         command=args.command,
         bash_script=args.bash_script,
     )
+    logging.info(f"Generated bash script: {bash_script}")
 
     slurm_script_filename = generate_slurm_script(
         bash_script=bash_script,
@@ -410,4 +414,5 @@ def cli_run_command_to_slurm_job():
         max_ram=args.max_ram,
         logs_dir=args.logs_dir,
     )
+    logging.info(f"Generated slurm script: {slurm_script_filename}")
     run_slurm_script(slurm_script_filename)
