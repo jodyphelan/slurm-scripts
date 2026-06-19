@@ -38,7 +38,7 @@ def command_to_bash_script(command: str, bash_script: str = None) -> str:
         f.write(f"{command}\n")
         slack_pings_file = get_slack_pings_file()
         if slack_pings_file is not None:
-            f.write(f"ping-slack '{command}'\n")
+            f.write(f"ping-slack '{command} ({uuid})'\n")
 
     current_mode = os.stat(bash_script).st_mode
     os.chmod(
