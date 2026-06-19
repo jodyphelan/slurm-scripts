@@ -27,8 +27,8 @@ def command_to_bash_script(command: str, bash_script: str = None) -> str:
     import os
     import stat
 
+    uuid = uuid4()
     if bash_script is None:
-        uuid = uuid4()
         # write to ~/.slurm-scripts/{uuid}.sh
         bash_script = os.path.expanduser(f"~/.slurm-scripts/{uuid}.sh")
         os.makedirs(os.path.dirname(bash_script), exist_ok=True)
