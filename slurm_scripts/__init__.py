@@ -6,6 +6,7 @@ __version__ = "0.1.0"
 
 
 import json
+from uuid import uuid4
 
 
 def generate_teams_message_card(content: str):
@@ -343,8 +344,7 @@ def cli_run_command_to_slurm_job():
     parser.add_argument(
         "--bash-script",
         type=str,
-        default="cmd2sjob.sh",
-        help="Name of the generated bash script (default: cmd2sjob.sh).",
+        help="Name of the generated bash script.",
     )
     parser.add_argument(
         "--job-name",
