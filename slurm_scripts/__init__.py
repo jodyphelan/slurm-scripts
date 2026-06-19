@@ -105,7 +105,7 @@ def generate_slurm_script(
 
     slurm_script = f"{os.path.splitext(bash_script)[0]}.slurm"
     os.makedirs(logs_dir, exist_ok=True)
-    base_name = os.path.splitext(bash_script)[0]
+    base_name = bash_script.split("/")[-1]
 
     with open(slurm_script, "w") as f:
         f.write(f"#!/bin/bash\n")
@@ -155,7 +155,7 @@ def generate_slurm_array_script(
     slurm_script = f"{os.path.splitext(bash_script)[0]}_array.slurm"
     array_arguments = [l.strip() for l in open(array_argument_file, "r")]
     os.makedirs(logs_dir, exist_ok=True)
-    base_name = os.path.splitext(bash_script)[0]
+    base_name = bash_script.split("/")[-1]
 
     with open(slurm_script, "w") as f:
         f.write(f"#!/bin/bash\n")
