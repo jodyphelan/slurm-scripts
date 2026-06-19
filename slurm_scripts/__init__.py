@@ -20,12 +20,18 @@ def get_slack_pings_file() -> str:
         return slack_pings_file
     return None
 
-def command_to_bash_script(command: str, bash_script: str = "cmd2sjob.sh") -> str:
+def command_to_bash_script(command: str, bash_script: str = None) -> str:
     """
     Create an executable bash script that runs the given command.
     """
     import os
     import stat
+
+    if bash_script is None:
+        uuid = uuid4()
+        # write to ~/.slurm-scripts/{uuid}.sh
+        bash_script = os.path.expanduser(f"~/.slurm-scripts/{uuid}.sh")
+        os.makedirs(os.path.dirname(bash_script), exist_ok=True)
 
     with open(bash_script, "w", encoding="utf-8") as f:
         f.write("#! /bin/bash\n")
@@ -84,8 +90,8 @@ def generate_slurm_script(
     partition: str = "project",
     output_file: str = None,
     error_file: str = None,
-    cpus_per_task: int = None,
-    max_ram: str = None,
+    cpus_per_task: int = 4,
+    max_ram: str = "15G",
     logs_dir: str = "logs",
 ) -> str:
     """
@@ -133,8 +139,8 @@ def generate_slurm_array_script(
     job_name: str = None,
     time: str = "01:00:00",
     partition: str = "project",
-    cpus_per_task: int = None,
-    max_ram: str = None,
+    cpus_per_task: int = 4,
+    max_ram: str = "15G",
     logs_dir: str = "logs",
 ) -> str:
     """
@@ -287,12 +293,14 @@ def cli_run_slurm_array():
     parser.add_argument(
         "--cpus-per-task",
         type=int,
-        help="Maximum number of CPU cores per task.",
+        default=4,
+        help="Maximum number of CPU cores per task (default: 4).",
     )
     parser.add_argument(
         "--max-ram",
         type=str,
-        help="Maximum RAM for the job, for example 16G or 8000M.",
+        default="15G",
+        help="Maximum RAM for the job, for example 16G or 8000M (default: 15G).",
     )
     parser.add_argument(
         "--logs-dir",
@@ -368,12 +376,14 @@ def cli_run_command_to_slurm_job():
     parser.add_argument(
         "--cpus-per-task",
         type=int,
-        help="Maximum number of CPU cores per task.",
+        default=4,
+        help="Maximum number of CPU cores per task (default: 4).",
     )
     parser.add_argument(
         "--max-ram",
         type=str,
-        help="Maximum RAM for the job, for example 16G or 8000M.",
+        default="15G",
+        help="Maximum RAM for the job, for example 16G or 8000M (default: 15G).",
     )
     parser.add_argument(
         "--logs-dir",
